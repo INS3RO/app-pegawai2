@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('employees.master')
 
-<head>
-</head>
+@section('title', 'Daftar Pegawai')
+@section('page-title', 'Daftar Pegawai')
 
-<body>
+@section('content')
     <div class="container mt-5">
         <h1 class="mb-4">Daftar Pegawai</h1>
         <table border="1" cellpadding="5" cellspacing="0">
@@ -33,8 +32,7 @@
                         <td>
                             <a href="{{ route('employees.show', $employee->id) }}">Detail</a> |
                             <a href="{{ route('employees.edit', $employee->id) }}">Edit</a> |
-                            <form action="{{ route('employees.destroy', $employee->id) }}" method="POST"
-                                style="display:inline;">
+                            <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" style="display:inline;">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" onclick="return confirm('Yakin ingin menghapus?')">Delete</button>
@@ -44,7 +42,9 @@
                 @endforeach
             </tbody>
         </table>
+        {{-- show pagination links if using paginate --}}
+        @if(method_exists($employees, 'links'))
+            <div class="mt-3">{{ $employees->links() }}</div>
+        @endif
     </div>
-</body>
-
-</html>
+@endsection
