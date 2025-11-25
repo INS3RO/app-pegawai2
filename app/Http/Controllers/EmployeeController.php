@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 use App\Models\Employee;
-
+use App\Models\Department;
+use App\Models\Position;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::latest()->paginate(5);
+        $employees = Employee::with(['department', 'position'])->get();
         return view('employees.index', compact('employees'));
     }
 
     public function create()
     {
-        return view('employees.create');
+        $departments = Department::all();
+        $positions = Position::all();
+        return view('employees.create', compact('departments', 'positions'));
     }
 
-     public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'nama_lengkap' => 'required|string|max:255',
@@ -28,39 +31,47 @@ class EmployeeController extends Controller
             'alamat' => 'required|string|max:255',
             'tanggal_masuk' => 'required|date',
             'status' => 'required|string|max:50',
+            'departemen_id' => 'nullable|exists:departments,id',
+            'jabatan_id' => 'nullable|exists:positions,id',
         ]);
 
         Employee::create($request->all());
-        return redirect()->route('employees.index');
+        return redirect()->route('employees.index')->with('success', 'Data berhasil ditambahkan.');
     }
 
-    public function show($id)
+    public function show(Employee $employee)
     {
-        $employee = Employee::find($id);
         return view('employees.show', compact('employee'));
     }
 
-    public function edit($id)
+    public function edit(Employee $employee)
     {
-        $employee = Employee::find($id);
-        return view('employees.edit', compact('employee'));
+        $departments = Department::all();
+        $positions = Position::all();
+        return view('employees.edit', compact('employee', 'departments', 'positions'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, Employee $employee)
     {
-        $request->validate([ /* sama seperti store */ ]);
-        $employee = Employee::findOrFail($id);
-        $employee->update($request->only([
-            'nama_lengkap','email','no_telpon','tanggal_kelahiran','alamat','tanggal_masuk','status'
-        ]));
-        return redirect()->route('employees.index');
+        $request->validate([
+            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|email|unique:employees,email,' . $employee->id,
+            'no_telpon' => 'required|string|max:20',
+            'tanggal_kelahiran' => 'required|date',
+            'alamat' => 'required|string',
+            'tanggal_masuk' => 'required|date',
+            'status' => 'required|in:aktif,nonaktif',
+            'departemen_id' => 'nullable|exists:departments,id',
+            'jabatan_id' => 'nullable|exists:positions,id',
+        ]);
+         $employee->update($request->all());
+        return redirect()->route('employees.index')->with('success', 'Data berhasil diperbarui.');
     }
 
-    public function destroy($id)
+    public function destroy(Employee $employee)
     {
-        $employee = Employee::find($id);
         $employee->delete();
-        return redirect()->route('employees.index');
+        return redirect()->route('employees.index')->with('success', 'Data berhasil dihapus.');
     }
 
 }
