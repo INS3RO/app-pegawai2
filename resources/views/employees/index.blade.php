@@ -1,50 +1,86 @@
-@extends('employees.master')
-
+@extends('master')
 @section('title', 'Daftar Pegawai')
-@section('page-title', 'Daftar Pegawai')
 
 @section('content')
-    <div class="container mt-5">
-        <h1 class="mb-4">Daftar Pegawai</h1>
-        <table border="1" cellpadding="5" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Nama Lengkap</th>
-                    <th>Email</th>
-                    <th>No Telpon</th>
-                    <th>Tanggal Kelahiran</th>
-                    <th>Alamat</th>
-                    <th>Tanggal Masuk</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($employees as $employee)
-                    <tr>
-                        <td>{{ $employee->nama_lengkap }}</td>
-                        <td>{{ $employee->email }}</td>
-                        <td>{{ $employee->no_telpon }}</td>
-                        <td>{{ $employee->tanggal_kelahiran }}</td>
-                        <td>{{ $employee->alamat }}</td>
-                        <td>{{ $employee->tanggal_masuk }}</td>
-                        <td>{{ $employee->status }}</td>
-                        <td>
-                            <a href="{{ route('employees.show', $employee->id) }}">Detail</a> |
-                            <a href="{{ route('employees.edit', $employee->id) }}">Edit</a> |
-                            <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" onclick="return confirm('Yakin ingin menghapus?')">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-        {{-- show pagination links if using paginate --}}
-        @if(method_exists($employees, 'links'))
-            <div class="mt-3">{{ $employees->links() }}</div>
-        @endif
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Daftar Pegawai</h1>
+        
+        <a href="{{ route('employees.create') }}" class="btn btn-primary">
+            + Tambah Pegawai
+        </a>
+    </div>
+
+    
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Lengkap</th>
+                            <th>Email</th>
+                            <th>Nomor Telepon</th>
+                            <th>Tanggal Masuk</th>
+                            <th>Status</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($employees as $key => $employee)
+                        <tr>
+                            
+                            <td>{{ $employees->firstItem() + $key }}</td>
+                            <td>{{ $employee->nama_lengkap }}</td>
+                            <td>{{ $employee->email }}</td>
+                            <td>{{ $employee->nomor_telepon }}</td>
+                            <td>{{ $employee->tanggal_masuk }}</td>
+                            <td>
+                                
+                                <span class="badge {{ $employee->status == 'aktif' ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ ucfirst($employee->status) }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <form action="{{ route('employees.destroy', $employee->id) }}" method="POST">
+                                    {{-- Tombol Detail --}}
+                                    <a href="{{ route('employees.show', $employee->id) }}" class="btn btn-info btn-sm text-white" title="Detail">
+                                        Detail
+                                    </a>
+
+                                    {{-- Tombol Edit --}}
+                                    <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-warning btn-sm" title="Edit">
+                                        Edit
+                                    </a>
+
+                                    @csrf
+                                    @method('DELETE')
+                                    {{-- Tombol Delete --}}
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="text-center">Data pegawai belum tersedia.</td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            
+            
+            <div class="d-flex justify-content-end">
+                {{ $employees->links() }}
+            </div>
+        </div>
     </div>
 @endsection

@@ -8,10 +8,18 @@ use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $employees = Employee::with(['department', 'position'])->get();
-        return view('employees.index', compact('employees'));
+    $query = Employee::latest();
+
+    if ($request->has('search')) {
+        $query->where('nama_lengkap', 'like', '%' . $request->search . '%');
+    }
+
+    $employees = $query->paginate(5); 
+    $employees->withQueryString();
+
+    return view('employees.index', compact('employees'));
     }
 
     public function create()
